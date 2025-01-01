@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "tailwindcss build views/styles.css -o assets/css/styles.css && go build .",
+    "dev": "tailwindcss -i views/styles.css -o assets/css/styles.css --watch | gowatch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

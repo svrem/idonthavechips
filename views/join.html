@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=`, initial-scale=1.0" />
+    <title>Document</title>
+
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+  </head>
+  <body class="bg-slate-800 flex justify-center p-8">
+    <form
+      class="rounded-sm p-6 border space-y-5 bg-white"
+      id="session-config"
+      action="/join-session"
+    >
+      <h1 class="text-xl font-semibold">Join Session</h1>
+
+      <div class="flex flex-col w-96">
+        <label for="game-id">Game ID</label>
+        <input
+          type="text"
+          required
+          id="game-id"
+          name="game-id"
+          class="border rounded-md p-2 w-full"
+          placeholder="Enter game ID"
+        />
+
+        <label for="player-name">Player Name</label>
+        <input
+          type="text"
+          required
+          id="name"
+          name="name"
+          class="border rounded-md p-2 w-full"
+          placeholder="Enter player name"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="bg-slate-900 text-white rounded-md p-2 w-full mt-4"
+        id="start"
+      >
+        Join
+      </button>
+    </form>
+  </body>
+</html>

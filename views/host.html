@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Host</title>
+
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  </head>
+  <body class="bg-slate-800">
+    <header class="flex justify-center bg-slate-900 py-4" id="game-header">
+      <div
+        class="relative border rounded-sm px-20 text-start bg-white flex items-center justify-center"
+      >
+        <p class="absolute top-2 left-20">Session ID:</p>
+        <p class="font-bold text-6xl">{{ .GameID }}</p>
+      </div>
+      <div id="qrcode" class="ml-4 p-2q bg-white"></div>
+    </header>
+
+    <section class="flex p-4" id="game-controls">
+      <button
+        id="start-button"
+        class="ml-auto font-semibold bg-white py-2 px-4 border rounded-sm"
+      >
+        Start
+      </button>
+      <button
+        id="submit-winners"
+        hidden
+        class="ml-auto font-semibold bg-white py-2 px-4 border rounded-sm"
+      >
+        Submit Winners
+      </button>
+    </section>
+
+    <section
+      class="grid px-5 gap-2 max-w-5xl mx-auto"
+      id="player-list"
+    ></section>
+
+    <section
+      class="grid px-5 gap-2 max-w-5xl mx-auto"
+      id="player-bet-list"
+    ></section>
+
+    <template id="player-bet-template">
+      <div class="bg-white px-4 rounded-sm flex justify-between">
+        <p class="py-4" id="player-name">Player 1</p>
+        <div class="flex items-center gap-4 relative">
+          <p class="" id="cash">1000</p>
+          <input
+            type="checkbox"
+            class="h-6 w-6 checked:bg-green-500"
+            id="player-ready"
+          />
+        </div></div
+    ></template>
+
+    <template id="player-template">
+      <div class="bg-white px-4 rounded-sm flex justify-between">
+        <p class="py-4" id="player-name">Player 1</p>
+        <div class="flex items-center gap-4 relative">
+          <p class="" id="cash">1000</p>
+          <button class="">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="icon icon-tabler icons-tabler-outline icon-tabler-x"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18 6l-12 12" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div></div
+    ></template>
+
+    <script>
+      const gameId = `{{ .GameID }}`;
+
+      console.log(`https://` + window.location.host + `/join/${gameId}`);
+
+      const qrcode = new QRCode(
+        document.getElementById("qrcode"),
+        {
+          text: `https://` + window.location.host + `/join/${gameId}`,
+          width: 128,
+          height: 128,
+        }
+
+        // window.location.host + `/join/${gameId}`
+      );
+
+      const socket = new WebSocket(`/ws/game/${gameId}?host=true`);
+
+      socket.onopen = (event) => {
+        console.log("Connected to the server");
+      };
+
+      socket.onmessage = (event) => {
+        message = JSON.parse(event.data);
+        console.log(message);
+
+        switch (message.type) {
+          case "player-list-update":
+            const player_template = document.getElementById("player-template");
+            const player_list = document.getElementById("player-list");
+
+            player_list.innerHTML = "";
+
+            if (message.data === null) {
+              return;
+            }
+
+            message.data.forEach((player) => {
+              const player_element = player_template.content.cloneNode(true);
+
+              player_element.querySelector("#player-name").textContent =
+                player.name;
+              player_element.querySelector("#cash").textContent =
+                "$" + player.cash;
+
+              player_list.appendChild(player_element);
+            });
+
+            break;
+
+          case "game-start":
+            document.getElementById("start-button").hidden = true;
+            document.getElementById("submit-winners").hidden = false;
+            document.getElementById("player-list").classList.add("hidden");
+            document.getElementById("game-header").classList.add("hidden");
+            document.getElementById("game-header").classList.add("hidden");
+            break;
+
+          case "bet-placed":
+            const player_bet_template = document.getElementById(
+              "player-bet-template"
+            );
+            const player_bet_list = document.getElementById("player-bet-list");
+
+            for (let i = 0; i < player_bet_list.children.length; i++) {
+              const child = player_bet_list.children[i];
+
+              if (child.getAttribute("data-user-id") === message.id) {
+                child.querySelector("#cash").textContent = "$" + message.bet;
+                return;
+              }
+            }
+
+            const new_player_bet = player_bet_template.content.cloneNode(true);
+
+            new_player_bet.firstElementChild.setAttribute(
+              "data-user-id",
+              message.id
+            );
+            new_player_bet.querySelector("#player-name").textContent =
+              message.name;
+            new_player_bet.querySelector("#cash").textContent =
+              "$" + message.bet;
+
+            player_bet_list.appendChild(new_player_bet);
+
+            break;
+          case "game-end":
+            document.getElementById("player-bet-list").innerHTML = "";
+            break;
+        }
+      };
+
+      const start_button = document.getElementById("start-button");
+      start_button.addEventListener("click", () => {
+        socket.send(
+          JSON.stringify({
+            type: "start",
+          })
+        );
+      });
+
+      const submit_winners = document.getElementById("submit-winners");
+      submit_winners.addEventListener("click", () => {
+        const winner_els = document.querySelectorAll(
+          "#player-bet-list > *:has(input:checked)"
+        );
+        const ids = Array.from(winner_els).map((el) =>
+          el.getAttribute("data-user-id")
+        );
+        console.log(ids);
+
+        socket.send(
+          JSON.stringify({
+            type: "declare-winners",
+            winners: ids,
+          })
+        );
+      });
+
+      // const socket = new WebSocket('ws://localhost:8080/ws/game/');
+    </script>
+  </body>
+</html>
