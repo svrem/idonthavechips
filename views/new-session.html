@@ -7,8 +7,8 @@
 
     <link rel="stylesheet" href="/assets/css/styles.css" />
   </head>
-  <body class="flex justify-center p-8 bg-slate-800">
-    <form
+  <body class="bg-slate-800 grid place-items-center h-full">
+    <!-- <form
       class="rounded-sm p-6 border space-y-5 bg-white"
       id="session-config"
       action="/api/new-session"
@@ -36,6 +36,30 @@
       >
         Start
       </button>
+    </form> -->
+
+    <form
+      class="rounded-md p-4 border gap-2 bg-white shadow h-36 w-80 grid grid-rows-2 absolute"
+      id="id-check"
+    >
+      <input
+        type="text"
+        required
+        name="cash-amount"
+        class="border-2 border-slate-300 rounded-md w-full font-semibold text-center focus:outline-none focus:border-slate-400 transition-colors"
+        placeholder="Enter starting cash"
+      />
+
+      <button
+        type="submit"
+        class="bg-slate-900 text-white rounded-md w-full font-bold"
+      >
+        Start
+      </button>
     </form>
+
+    <a href="/" class="text-white underline bottom-2 absolute">
+      Join a session
+    </a>
   </body>
 </html>

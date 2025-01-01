@@ -95,6 +95,19 @@ func main() {
 		http.Redirect(w, r, url.String(), http.StatusFound)
 	}))
 
+	http.HandleFunc("/api/check-session", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
+		gameID := query.Get("game-id")
+
+		_, ok := IDToGameSocket[gameID]
+		if !ok {
+			w.Write([]byte("false"))
+			return
+		}
+
+		w.Write([]byte("true"))
+	}))
+
 	type HostData struct {
 		GameID string
 	}

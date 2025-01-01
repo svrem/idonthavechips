@@ -3,22 +3,135 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Enter Session ID - IDontHaveChips</title>
 
     <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <style>
+      .hide {
+        animation: slideFadeOut 0.25s ease-in forwards;
+      }
+
+      .show {
+        opacity: 0;
+        transform: translateX(2%);
+        animation: slideFadeIn 0.25s ease-in 0.2s forwards;
+      }
+
+      @keyframes slideFadeOut {
+        0% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(-20%) scale(0.9);
+        }
+      }
+
+      @keyframes slideFadeIn {
+        0% {
+          opacity: 0;
+          transform: translateX(20%) scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    </style>
   </head>
-  <body class="bg-slate-800 flex justify-center h-full gap-4 p-8">
-    <a
-      href="/join"
-      class="text-black bg-white w-60 h-40 grid place-items-center rounded-sm"
-    >
-      <p class="text-2xl font-semibold text-center">Join Session</p></a
-    >
-    <a
-      href="/new-session"
-      class="text-black bg-white w-60 h-40 grid place-items-center rounded-sm"
-    >
-      <p class="text-2xl font-semibold text-center">New Session</p></a
-    >
+  <body class="bg-slate-800 grid place-items-center h-full">
+    <div class="relative w-80 h-36">
+      <form
+        class="rounded-md p-4 border gap-2 bg-white shadow h-full w-full grid grid-rows-2 absolute"
+        id="id-check"
+      >
+        <input
+          type="text"
+          required
+          id="game-id"
+          name="game-id"
+          class="border-2 border-slate-300 rounded-md w-full font-semibold text-center focus:outline-none focus:border-slate-400 transition-colors"
+          placeholder="Enter game ID"
+        />
+
+        <button
+          type="submit"
+          class="bg-slate-900 text-white rounded-md w-full font-bold"
+          id="check-id-button"
+        >
+          Enter
+        </button>
+      </form>
+
+      <form
+        class="rounded-md p-4 border gap-2 bg-white shadow h-full w-full grid grid-rows-2"
+        hidden
+        id="username-form"
+      >
+        <input
+          type="text"
+          required
+          id="username"
+          class="border-2 border-slate-300 rounded-md w-full font-semibold text-center focus:outline-none focus:border-slate-400 transition-colors"
+          placeholder="Nickname"
+        />
+
+        <button
+          type="submit"
+          class="bg-slate-900 text-white rounded-md w-full font-bold"
+          id="check-username-button"
+        >
+          Let's Go Gambling 🙏
+        </button>
+      </form>
+    </div>
+
+    <a href="/new-session" class="text-white underline bottom-2 absolute">
+      Create a new session
+    </a>
+
+    <script>
+      const idCheck = document.getElementById("id-check");
+      const idInput = document.getElementById("game-id");
+
+      const usernameForm = document.getElementById("username-form");
+      const usernameButton = document.getElementById("check-username-button");
+
+      idInput.addEventListener("input", () => {
+        idInput.classList.remove("border-red-500");
+        idInput.classList.remove("bg-red-50");
+      });
+
+      idCheck.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const res = await fetch(
+          "/api/check-session?game-id=" + encodeURIComponent(idInput.value)
+        );
+        const data = await res.text();
+
+        if (data === "true") {
+          idCheck.classList.add("hide");
+          usernameForm.classList.remove("hidden");
+          usernameForm.classList.add("show");
+        } else {
+          idInput.classList.add("border-red-500");
+          idInput.classList.add("bg-red-50");
+        }
+      });
+
+      usernameForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const gameId = idInput.value;
+
+        window.location.href = `/join-session?game-id=${encodeURIComponent(
+          gameId
+        )}&name=${encodeURIComponent(username)}`;
+      });
+    </script>
   </body>
 </html>
