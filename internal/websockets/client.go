@@ -154,7 +154,7 @@ func ServeWs(gameSocket *GameSocket, w http.ResponseWriter, r *http.Request, nam
 		return
 	}
 
-	if gameSocket.game.started {
+	if gameSocket.game.Started {
 		http.Error(w, "Game already started", http.StatusConflict)
 		return
 	}

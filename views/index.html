@@ -39,6 +39,28 @@
           transform: translateX(0);
         }
       }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-5%);
+        }
+        50% {
+          transform: translateX(5%);
+        }
+        75% {
+          transform: translateX(-5%);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .shake {
+        animation: shake 0.5s ease-in-out;
+      }
     </style>
   </head>
   <body class="bg-slate-800 grid place-items-center h-full">
@@ -93,20 +115,87 @@
       Create a new session
     </a>
 
+    <!-- <svg
+      class="absolute w-full h-full border border-green-400 -z-10 text-slate-700"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      >
+      <line
+        x1="0%"
+        y1="50%"
+        x2="10%"
+        y2="60%"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <line
+        x1="10%"
+        y1="60%"
+        x2="20%"
+        y2="30%"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <line
+        x1="20%"
+        y1="30%"
+        x2="30%"
+        y2="55%"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <line
+        x1="30%"
+        y1="55%"
+        x2="40%"
+        y2="30%"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <line
+        x1="40%"
+        y1="30%"
+        x2="50%"
+        y2="88%"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+    </svg> -->
+
     <script>
       const idCheck = document.getElementById("id-check");
       const idInput = document.getElementById("game-id");
 
       const usernameForm = document.getElementById("username-form");
       const usernameButton = document.getElementById("check-username-button");
+      const usernameInput = document.getElementById("username");
+
+      const gameId = new URLSearchParams(window.location.search).get("game-id");
+      if (gameId) {
+        idInput.value = gameId;
+        // idCheck.submit();
+        idCheck.classList.add("hide");
+        usernameForm.classList.remove("hidden");
+        usernameForm.classList.add("show");
+        usernameInput.focus();
+      }
 
       idInput.addEventListener("input", () => {
         idInput.classList.remove("border-red-500");
         idInput.classList.remove("bg-red-50");
+        idInput.classList.remove("shake");
+        idInput.classList.add("border-slate-300");
       });
 
       idCheck.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        idInput.blur();
 
         const res = await fetch(
           "/api/check-session?game-id=" + encodeURIComponent(idInput.value)
@@ -117,8 +206,11 @@
           idCheck.classList.add("hide");
           usernameForm.classList.remove("hidden");
           usernameForm.classList.add("show");
+          usernameInput.focus();
         } else {
+          idInput.classList.remove("border-slate-300");
           idInput.classList.add("border-red-500");
+          idInput.classList.add("shake");
           idInput.classList.add("bg-red-50");
         }
       });

@@ -100,8 +100,12 @@ func main() {
 		query := r.URL.Query()
 		gameID := query.Get("game-id")
 
-		_, ok := IDToGameSocket[gameID]
+		gameSocket, ok := IDToGameSocket[gameID]
 		if !ok {
+			w.Write([]byte("false"))
+			return
+		}
+		if gameSocket.Closed || gameSocket.GetGame().Started {
 			w.Write([]byte("false"))
 			return
 		}

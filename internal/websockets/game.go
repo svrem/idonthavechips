@@ -13,7 +13,7 @@ type Game struct {
 
 	StartingCash int
 
-	started bool
+	Started bool
 
 	players []*Client
 }
@@ -26,7 +26,7 @@ func NewGame(startingCash int) *Game {
 
 		StartingCash: startingCash,
 
-		started: false,
+		Started: false,
 
 		players: []*Client{},
 	}
@@ -46,7 +46,7 @@ func (g *Game) RemovePlayer(player *Client) {
 }
 
 func (g *Game) Start() {
-	if g.started {
+	if g.Started {
 		return
 	}
 
@@ -54,7 +54,7 @@ func (g *Game) Start() {
 		player.send <- []byte(`{"type": "game-start"}`)
 	}
 
-	g.started = true
+	g.Started = true
 }
 
 func (g *Game) PlaceBet(player *Client, amount int) {

@@ -46,6 +46,12 @@
       id="player-bet-list"
     ></section>
 
+    <p
+      id="pot"
+      class="absolute -z-10 text-9xl font-bold text-slate-500 top-0 bottom-0 left-0 right-0 m-auto h-fit w-fit"
+      hidden
+    ></p>
+
     <template id="player-bet-template">
       <div class="bg-white px-4 rounded-sm flex justify-between">
         <p class="py-4" id="player-name">Player 1</p>
@@ -88,12 +94,13 @@
     <script>
       const gameId = `{{ .GameID }}`;
 
-      console.log(`https://` + window.location.host + `/join/${gameId}`);
-
       const qrcode = new QRCode(
         document.getElementById("qrcode"),
         {
-          text: `https://` + window.location.host + `/join/${gameId}`,
+          text:
+            `https://` +
+            window.location.host +
+            `/?game=${encodeURIComponent(gameId)}`,
           width: 128,
           height: 128,
         }
@@ -102,6 +109,31 @@
       );
 
       const socket = new WebSocket(`/ws/game/${gameId}?host=true`);
+
+      let current_pot = 0;
+      let target_pot = 0;
+
+      setInterval(() => {
+        const diff = target_pot - current_pot;
+        const step = Math.round(Math.max(diff / 25, 1));
+
+        if (current_pot < target_pot) {
+          current_pot += step;
+        } else if (current_pot > target_pot) {
+          current_pot -= step;
+        }
+
+        document.getElementById("pot").textContent = "$" + current_pot;
+      }, 1000 / 60);
+
+      function updateTargetBet() {
+        const player_bet_list = document.getElementById("player-bet-list");
+
+        target_pot = 0;
+        for (const child of player_bet_list.children) {
+          target_pot += parseInt(child.getAttribute("data-bet"));
+        }
+      }
 
       socket.onopen = (event) => {
         console.log("Connected to the server");
@@ -138,6 +170,7 @@
           case "game-start":
             document.getElementById("start-button").hidden = true;
             document.getElementById("submit-winners").hidden = false;
+            document.getElementById("pot").hidden = false;
             document.getElementById("player-list").classList.add("hidden");
             document.getElementById("game-header").classList.add("hidden");
             document.getElementById("game-header").classList.add("hidden");
@@ -154,6 +187,9 @@
 
               if (child.getAttribute("data-user-id") === message.id) {
                 child.querySelector("#cash").textContent = "$" + message.bet;
+                child.setAttribute("data-bet", message.bet);
+
+                updateTargetBet();
                 return;
               }
             }
@@ -164,6 +200,10 @@
               "data-user-id",
               message.id
             );
+            new_player_bet.firstElementChild.setAttribute(
+              "data-bet",
+              message.bet
+            );
             new_player_bet.querySelector("#player-name").textContent =
               message.name;
             new_player_bet.querySelector("#cash").textContent =
@@ -171,9 +211,15 @@
 
             player_bet_list.appendChild(new_player_bet);
 
+            updateTargetBet();
+
             break;
           case "game-end":
             document.getElementById("player-bet-list").innerHTML = "";
+
+            current_pot = 0;
+            target_pot = 0;
+
             break;
         }
       };
