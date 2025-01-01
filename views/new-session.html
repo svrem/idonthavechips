@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Enter Starting Cash - IDontHaveChips</title>
 
     <link rel="stylesheet" href="/assets/css/styles.css" />
   </head>
@@ -41,10 +41,13 @@
     <form
       class="rounded-md p-4 border gap-2 bg-white shadow h-36 w-80 grid grid-rows-2 absolute"
       id="id-check"
+      action="/api/new-session"
     >
       <input
-        type="text"
+        type="number"
         required
+        min="0"
+        max="10000"
         name="cash-amount"
         class="border-2 border-slate-300 rounded-md w-full font-semibold text-center focus:outline-none focus:border-slate-400 transition-colors"
         placeholder="Enter starting cash"

@@ -157,5 +157,9 @@ func main() {
 	// assets
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "assets/favicon.ico")
+	})
+
 	http.ListenAndServe(":8080", nil)
 }
