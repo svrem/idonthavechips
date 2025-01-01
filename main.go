@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/svrem/idonthavechips/internal/quotes"
 	"github.com/svrem/idonthavechips/internal/websockets"
 )
 
@@ -150,8 +151,15 @@ func main() {
 		http.ServeFile(w, r, "views/join.html")
 	})
 
+	type IndexData struct {
+		Quote string
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "views/index.html")
+		template := template.Must(template.ParseFiles("views/index.html"))
+		template.Execute(w, IndexData{Quote: quotes.RandomQuote()})
+
+		// http.ServeFile(w, r, "views/index.html")
 	})
 
 	// assets
