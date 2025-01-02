@@ -170,14 +170,14 @@
       function drawCashHistory() {
         cashHistorySVG.innerHTML = "";
 
-        const step = 100 / cashHistory.length;
+        const step = 100 / (cashHistory.length - 1);
         const max_cash = Math.max(...cashHistory);
 
         let prev_pos = [0, 100 - ((cashHistory[0] / max_cash) * 100) / 2 - 25];
 
         for (let i = 1; i < cashHistory.length; i++) {
           const pos = [
-            i * step + step,
+            i * step,
             100 - ((cashHistory[i] / max_cash) * 100) / 2 - 25,
           ];
 
