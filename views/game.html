@@ -69,7 +69,7 @@
 
     <svg
       id="cash-history"
-      class="absolute w-full h-full -z-10 text-slate-700"
+      class="absolute top-0 pointer-events-none -z-50 w-full h-full text-slate-700"
     ></svg>
 
     <template id="bet-log-negative">
@@ -112,14 +112,16 @@
       </div></template
     >
     <template id="bet-log-positive">
-      <div class="bg-green-400 p-2 rounded-sm w-full h-12 flex justify-between">
+      <div
+        class="bg-green-400 p-2 rounded-sm w-full h-12 flex justify-between items-center"
+      >
         <svg
           fill="white"
           viewBox="0 0 24 24"
           id="up-trend-round"
           data-name="Flat Line"
           xmlns="http://www.w3.org/2000/svg"
-          class="icon flat-line"
+          class="icon flat-line h-full"
         >
           <path
             id="primary"
@@ -145,7 +147,7 @@
             "
           ></polyline>
         </svg>
-        <p class="text-white" id="amount">You won $100</p>
+        <p class="text-white h-fit" id="amount">You won $100</p>
       </div>
     </template>
 

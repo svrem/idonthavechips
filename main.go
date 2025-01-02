@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -173,5 +174,6 @@ func main() {
 		http.ServeFile(w, r, "assets/favicon.ico")
 	})
 
+	slog.Info("Server started on port 8080")
 	http.ListenAndServe(":8080", nil)
 }
