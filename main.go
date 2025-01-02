@@ -152,6 +152,10 @@ func main() {
 		template.Execute(w, JoinData{GameID: r.PathValue("id"), Name: query.Get("name"), StartingCash: gameSocket.GetGame().StartingCash})
 	})
 
+	http.HandleFunc("/demo/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "views/demo.html")
+	})
+
 	http.HandleFunc("/join/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "views/join.html")
 	})

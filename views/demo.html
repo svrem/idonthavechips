@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gambling 😋 - IDontHaveChips</title>
+
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+
+    <style>
+      .slider {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 15px;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-800 flex items-center flex-col p-8">
+    <p class="text-white text-center w-full max-w-4xl mb-10 font-semibold">
+      Normally, this page would be used by players to make bets in their online
+      session, but since I know you guys can't be bothered with creating such a
+      session, I made this little demo for you. You can try the betting input,
+      and bet some fake money. When you're ready, click the play button to see
+      if you win or lose.
+    </p>
+
+    <div
+      id="pre-game"
+      class="rounded-sm p-6 border space-y-5 bg-white flex flex-col items-center"
+    >
+      <h1 class="text-xl font-semibold">
+        Waiting for host to start the session...
+      </h1>
+
+      <div class="loader"></div>
+    </div>
+
+    <div
+      id="game"
+      class="rounded-sm hidden p-6 border space-y-5 bg-white flex-col items-center w-96 min-h-36"
+    >
+      <div class="flex justify-between w-full">
+        <h1 class="text-xl font-semibold">Make a bet</h1>
+        <p id="cash">$1000</p>
+      </div>
+
+      <div class="w-full">
+        <span
+          id="bet-display"
+          class="text-lg text-slate-500 text-center font-bold block"
+        >
+          $0
+        </span>
+
+        <input
+          type="range"
+          name="bet"
+          id="bet-slider"
+          value="0"
+          min="0"
+          max="1000"
+          class="w-full slider bg-slate-900"
+        />
+      </div>
+
+      <button class="bg-slate-900 text-white rounded-md p-2 w-full" id="bet">
+        Bet
+      </button>
+      <button class="bg-slate-800 text-white rounded-md p-2 w-full" id="play">
+        Play (Demo)
+      </button>
+    </div>
+
+    <div class="w-96 flex gap-2 m-4 flex-col-reverse" id="bet-logs"></div>
+
+    <svg
+      id="cash-history"
+      class="absolute top-0 pointer-events-none -z-50 w-full h-full text-slate-700"
+    ></svg>
+
+    <template id="bet-log-negative">
+      <div
+        class="bg-red-400 p-2 rounded-sm w-full h-12 flex justify-between items-center"
+      >
+        <svg
+          fill="white"
+          viewBox="0 0 24 24"
+          id="up-trend-round"
+          data-name="Flat Line"
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon flat-line -scale-y-100 h-full"
+        >
+          <path
+            id="primary"
+            d="M21,7l-6.79,6.79a1,1,0,0,1-1.42,0l-2.58-2.58a1,1,0,0,0-1.42,0L3,17"
+            style="
+              fill: none;
+              stroke: white;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              stroke-width: 2;
+            "
+          ></path>
+          <polyline
+            id="primary-2"
+            data-name="primary"
+            points="21 11 21 7 17 7"
+            style="
+              fill: none;
+              stroke: white;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              stroke-width: 2;
+            "
+          ></polyline>
+        </svg>
+        <p class="text-white" id="amount">You invested $100</p>
+      </div></template
+    >
+    <template id="bet-log-positive">
+      <div
+        class="bg-green-400 p-2 rounded-sm w-full h-12 flex justify-between items-center"
+      >
+        <svg
+          fill="white"
+          viewBox="0 0 24 24"
+          id="up-trend-round"
+          data-name="Flat Line"
+          xmlns="http://www.w3.org/2000/svg"
+          class="icon flat-line h-full"
+        >
+          <path
+            id="primary"
+            d="M21,7l-6.79,6.79a1,1,0,0,1-1.42,0l-2.58-2.58a1,1,0,0,0-1.42,0L3,17"
+            style="
+              fill: none;
+              stroke: white;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              stroke-width: 2;
+            "
+          ></path>
+          <polyline
+            id="primary-2"
+            data-name="primary"
+            points="21 11 21 7 17 7"
+            style="
+              fill: none;
+              stroke: white;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              stroke-width: 2;
+            "
+          ></polyline>
+        </svg>
+        <p class="text-white h-fit" id="amount">You won $100</p>
+      </div>
+    </template>
+
+    <script>
+      let cash = 1000;
+      const cashHistory = [cash];
+      let totalBet = 0;
+
+      const game = document.getElementById("game");
+      const preGame = document.getElementById("pre-game");
+      const betSlider = document.getElementById("bet-slider");
+      const betDisplay = document.getElementById("bet-display");
+      const betInput = document.getElementById("bet-slider");
+      const cashDisplay = document.getElementById("cash");
+      const betLogs = document.getElementById("bet-logs");
+      const cashHistorySVG = document.getElementById("cash-history");
+
+      const betButton = document.getElementById("bet");
+      const playButton = document.getElementById("play");
+
+      setTimeout(() => {
+        game.classList.remove("hidden");
+        game.classList.add("flex");
+        preGame.classList.add("hidden");
+      }, 1500);
+
+      cashDisplay.innerText = `$${cash}`;
+      // betInput.max = cash;
+
+      function drawCashHistory() {
+        cashHistorySVG.innerHTML = "";
+
+        const step = 100 / (cashHistory.length - 1);
+        const max_cash = Math.max(...cashHistory);
+
+        let prev_pos = [0, 100 - ((cashHistory[0] / max_cash) * 100) / 2 - 25];
+
+        for (let i = 1; i < cashHistory.length; i++) {
+          const pos = [
+            i * step,
+            100 - ((cashHistory[i] / max_cash) * 100) / 2 - 25,
+          ];
+
+          const line = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line"
+          );
+          line.setAttribute("x1", `${prev_pos[0]}%`);
+          line.setAttribute("y1", `${prev_pos[1]}%`);
+          line.setAttribute("x2", `${pos[0]}%`);
+          line.setAttribute("y2", `${pos[1]}%`);
+          line.setAttribute("stroke", "currentColor");
+          line.setAttribute("stroke-width", "4");
+          line.setAttribute("stroke-linecap", "round");
+
+          cashHistorySVG.appendChild(line);
+
+          prev_pos = pos;
+        }
+      }
+
+      // const socket = new WebSocket(`/ws/game/{{ .GameID }}?name={{ .Name }}`);
+
+      // socket.onerror = (event) => {
+      //   window.location.href = "/";
+      // };
+
+      // socket.onclose = (event) => {
+      //   alert("Session has ended");
+      //   window.location.href = "/";
+      // };
+
+      // socket.onmessage = (event) => {
+      //   const data = JSON.parse(event.data);
+
+      //   switch (data.type) {
+      //     case "game-start":
+      //       const game = document.getElementById("game");
+      //       const preGame = document.getElementById("pre-game");
+
+      //       game.classList.remove("hidden");
+      //       game.classList.add("flex");
+      //       preGame.classList.add("hidden");
+      //       break;
+      //     case "money-update":
+      //       totalBet = 0;
+
+      //       const change = data.amount;
+
+      //       if (change > 0) {
+      //         const log = document
+      //           .getElementById("bet-log-positive")
+      //           .content.cloneNode(true);
+      //         log.querySelector("#amount").innerText = `You won $${change}`;
+      //         betLogs.appendChild(log);
+      //       } else if (change < 0) {
+      //         const log = document
+      //           .getElementById("bet-log-negative")
+      //           .content.cloneNode(true);
+      //         log.querySelector(
+      //           "#amount"
+      //         ).innerText = `You invested $${-change}`;
+      //         betLogs.appendChild(log);
+      //       }
+
+      //       cash += data.amount;
+      //       cashDisplay.innerText = `$${cash}`;
+      //       betSlider.max = cash;
+      //       betSlider.value = 0;
+      //       betDisplay.innerText = `$${totalBet}`;
+
+      //       cashHistory.push(cash);
+      //       drawCashHistory();
+
+      //       break;
+      //   }
+      // };
+
+      betSlider.oninput = (event) => {
+        if (totalBet !== 0)
+          betDisplay.innerText = `$${totalBet} + $${event.target.value}`;
+        else {
+          betDisplay.innerText = `$${event.target.value}`;
+        }
+      };
+
+      betButton.onclick = (event) => {
+        event.preventDefault();
+
+        const betAmount = parseInt(betSlider.value);
+        totalBet += betAmount;
+
+        betSlider.max = cash - totalBet;
+        betSlider.value = 0;
+        betDisplay.innerText = `$${totalBet}`;
+      };
+
+      playButton.onclick = (event) => {
+        const won = Math.random() > 0.5;
+
+        const change = won ? totalBet : -totalBet;
+        totalBet = 0;
+
+        if (change > 0) {
+          const log = document
+            .getElementById("bet-log-positive")
+            .content.cloneNode(true);
+          log.querySelector("#amount").innerText = `You won $${change}`;
+          betLogs.appendChild(log);
+        } else if (change < 0) {
+          const log = document
+            .getElementById("bet-log-negative")
+            .content.cloneNode(true);
+          log.querySelector("#amount").innerText = `You invested $${-change}`;
+          betLogs.appendChild(log);
+        }
+
+        cash += change;
+        cashDisplay.innerText = `$${cash}`;
+        betSlider.max = cash;
+        betSlider.value = 0;
+        betDisplay.innerText = `$${totalBet}`;
+
+        cashHistory.push(cash);
+        drawCashHistory();
+      };
+    </script>
+  </body>
+</html>
